@@ -48,6 +48,26 @@ card_layout_strategy = SubResource("Resource_w7312")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.6708, -4.57966, 0)
 card_layout_strategy = SubResource("Resource_vepqr")
 
+[node name="Player_Score" type="Label" parent="Table"]
+offset_left = 138.0
+offset_top = 24.0
+offset_right = 268.0
+offset_bottom = 67.0
+text = "Player Score: 0"
+
+[node name="Dealer_Score" type="Label" parent="Table"]
+offset_left = 281.0
+offset_top = 24.0
+offset_right = 411.0
+offset_bottom = 67.0
+text = "Dealer Score: 0"
+
+[node name="Winner" type="Label" parent="Table"]
+offset_left = 143.0
+offset_top = 62.0
+offset_right = 336.0
+offset_bottom = 157.0
+
 [node name="Deck" parent="." instance=ExtResource("4_rcrqi")]
 transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, 11.086, 4.885, -0.687)
 
