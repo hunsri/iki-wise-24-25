@@ -65,11 +65,14 @@ func get_card(hand):
 	return card.rank
 	
 func stop_index_reached() -> bool:
-	print(DECK_SIZE / 2)
-	print(deck.cards.size())
+	print("Stop Index At: ", DECK_SIZE / 2)
+	print("Remaining Cards: ",deck.cards.size())
 	return (DECK_SIZE / 2 > deck.cards.size())
 	
 func fill_deck():
+	
+	deck.remove_all()
+	
 	for n in DECK_SIZE:
 		var data = next_card()
 		var card = instantiate_face_card(data["rank"], data["suit"])
@@ -144,8 +147,10 @@ func should_bank_get_third_card(player_third_card: int, dealer_score: int) -> bo
 func _on_button_play_pressed():
 	
 	if stop_index_reached():
-		print("Stop index has been reached")
-		return
+		print("++++++++++++++++++++++")
+		print("Stop index has been reached!")
+		fill_deck()
+		print("Deck has been refilled and shuffled!")
 	
 	if round_ongoing:
 		return
