@@ -74,6 +74,8 @@ func fill_deck():
 		var data = next_card()
 		var card = instantiate_face_card(data["rank"], data["suit"])
 		deck.append_card(card)
+	
+	deck.cards.shuffle()
 
 func calc_score(hand) -> int:
 	var score = 0
@@ -195,7 +197,7 @@ func _on_button_play_pressed():
 			player_score_label.text = "Player Score: " + str(player_score)
 			
 			if should_bank_get_third_card(player_3_card_rank, dealer_score):
-				print("Dealer gets also a 3. card")
+				print("Dealer gets also a 3rd card")
 				await get_tree().create_timer(2).timeout 
 				var dealer_card_rank = get_card(dealer_hand)
 				dealer_score = calc_score(dealer_hand)
