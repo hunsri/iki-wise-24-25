@@ -46,20 +46,15 @@ func instantiate_face_card(rank, suit) -> FaceCard3D:
 	return face_card_3d
 
 func get_2_card(hand):
-	var data = next_card()
-	var card = instantiate_face_card(data["rank"], data["suit"])
-	hand.append_card(card)
-	card.global_position = $"../Deck".global_position
-	data = next_card()
-	card = instantiate_face_card(data["rank"], data["suit"])
-	hand.append_card(card)
-	card.global_position = $"../Deck".global_position
+	get_card(hand)
+	get_card(hand)
 
 func get_card(hand):
 	var data = next_card()
 	var card = instantiate_face_card(data["rank"], data["suit"])
 	hand.append_card(card)
 	card.global_position = $"../Deck".global_position
+	
 	return card.rank
 
 func calc_score(hand) -> int:
@@ -90,10 +85,10 @@ func check_if_winner(player_score, dealer_score):
 	if (player_score == 8 && dealer_score == 9):
 		return [false, true, 'dealer wins'] 
 
-	if (player_score >= 8 && player_score <= 9):
+	if (player_score == 8 || player_score == 9):
 		if (dealer_score < 8):
 			return [true, false, 'player wins']
-	if (dealer_score >= 8 && dealer_score <=9):
+	if (dealer_score == 8 || dealer_score == 9):
 		if (player_score < 8):
 			return [false, true, 'dealer wins']
 	
@@ -102,13 +97,29 @@ func check_if_winner(player_score, dealer_score):
 
 func check_player_third_card(player_score, dealer_score):
 	var player_third = false
-	# Player "stands" if between 6-7 -> No 3. card
-	if (player_score >= 6 && player_score <= 7):
+	# Player "stands" if between 6-7 -> then player gets no third card
+	if (player_score == 6 || player_score == 7):
 		player_third = false
 	# Player gets 3. card if between 0-5
 	if (player_score >= 0 && player_score <= 5):
 		player_third = true
 	return player_third
+
+func should_bank_get_third_card(player_third_card: int, dealer_score: int) -> bool:
+
+	# Check if dealer also gets a third card according to the rule
+	if (dealer_score >= 0 && dealer_score <= 2):
+		return true
+	elif (dealer_score == 3 && player_third_card != 8):
+		return true
+	elif (dealer_score == 4 && player_third_card >= 2 && player_third_card <= 7 ):
+		return true
+	elif (dealer_score == 5 && player_third_card >= 4 && player_third_card <= 7 ):
+		return true
+	elif (dealer_score == 6 && player_third_card >= 6 && player_third_card <= 7 ):
+		return true
+	
+	return false
 
 func _on_button_play_pressed():
 	
@@ -129,6 +140,7 @@ func _on_button_play_pressed():
 	# Give Player and Dealer two cards
 	get_2_card(player_hand)
 	get_2_card(dealer_hand)
+	
 	print("Player has: ", player_hand.cards)
 	print("Dealer has: ", dealer_hand.cards)
 	
@@ -152,36 +164,30 @@ func _on_button_play_pressed():
 		var player_third_card = check_player_third_card(player_score, dealer_score)
 		# If the player has to get a third card do:
 		if (player_third_card):
-			print("Player gets 3. card")
+			print("Player gets 3rd card")
 			# Player takes 3. card and wait 2 seconds for animation
 			await get_tree().create_timer(2).timeout 
 			var player_3_card_rank = get_card(player_hand)
 			# Check new score 
 			player_score = calc_score(player_hand)
 			player_score_label.text = "Player Score: " + str(player_score)
-			# Check if dealer also gets a third card according to the rule
-			if (dealer_score >= 0 && dealer_score <= 2):
+			
+			if should_bank_get_third_card(player_3_card_rank, dealer_score):
 				print("Dealer gets also a 3. card")
 				await get_tree().create_timer(2).timeout 
 				var dealer_card_rank = get_card(dealer_hand)
 				dealer_score = calc_score(dealer_hand)
 				dealer_score_label.text = "Dealer Score: " + str(dealer_score)
-			elif (dealer_score >= 3 && dealer_score <= 6):
-				if (player_3_card_rank != 8):
-					print("Dealer gets also a 3. card")
-					await get_tree().create_timer(2).timeout 
-					var dealer_card_rank = get_card(dealer_hand)
-					dealer_score = calc_score(dealer_hand)
-					dealer_score_label.text = "Dealer Score: " + str(dealer_score)
+				
 		elif not player_third_card:
 			if (dealer_score >= 0 && dealer_score <= 5):
-				print("Dealer gets 3. card")
+				print("Dealer gets 3rd card")
 				await get_tree().create_timer(2).timeout 
 				var dealer_card_rank = get_card(dealer_hand)
 				dealer_score = calc_score(dealer_hand)
 				dealer_score_label.text = "Dealer Score: " + str(dealer_score)
 			elif (dealer_score >= 6 && dealer_score <= 7):
-				print("Dealer stands. No 3. card for dealer")
+				print("Dealer stands. No third card for dealer")
 				
 		# Check score again, highest score wins
 		player_score = calc_score(player_hand)
