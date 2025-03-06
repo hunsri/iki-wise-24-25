@@ -12,6 +12,8 @@ var ranks = [2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14]
 var suit_index = 0
 var rank_index = 0
 
+var round_ongoing:bool = false
+
 @onready var player_hand: CardCollection3D = $Player_Hand
 @onready var dealer_hand: CardCollection3D = $Dealer_Hand
 
@@ -109,6 +111,12 @@ func check_player_third_card(player_score, dealer_score):
 	return player_third
 
 func _on_button_play_pressed():
+	
+	if round_ongoing:
+		return
+	else:
+		round_ongoing = true
+	
 	print("Play one Round of Baccarat")
 	# Remove cards before each round
 	player_hand.remove_all()
@@ -201,6 +209,8 @@ func _on_button_play_pressed():
 	
 	print("End of round!")
 	print("--------------------------")
+	
+	round_ongoing = false
 		
 	
 	
