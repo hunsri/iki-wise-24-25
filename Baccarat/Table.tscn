@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3 uid="uid://fk4g8gvi4ylj"]
+[gd_scene load_steps=11 format=3 uid="uid://fk4g8gvi4ylj"]
 
 [ext_resource type="Script" path="res://Baccarat/table.gd" id="1_bvlji"]
 [ext_resource type="PlaneMesh" uid="uid://jd3cjd3de5ge" path="res://example/table.tres" id="2_xqsm6"]
@@ -7,6 +7,7 @@
 [ext_resource type="PackedScene" uid="uid://bwj6sgafilrk8" path="res://Baccarat/face_card_3d.tscn" id="4_rcrqi"]
 [ext_resource type="Script" path="res://addons/card_3d/scripts/card_layouts/line_card_layout.gd" id="5_4ur86"]
 [ext_resource type="BoxMesh" uid="uid://d3wgqugu1eq8h" path="res://example/card_mesh.tres" id="6_5wfqm"]
+[ext_resource type="Script" path="res://Baccarat/confirmation_dialog.gd" id="6_p3mqo"]
 
 [sub_resource type="Resource" id="Resource_w7312"]
 script = ExtResource("5_4ur86")
@@ -24,8 +25,9 @@ fov = 84.6
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 shadow_enabled = true
 
-[node name="Table" type="Node3D" parent="."]
+[node name="Table" type="Node3D" parent="." node_paths=PackedStringArray("cardDialog")]
 script = ExtResource("1_bvlji")
+cardDialog = NodePath("CardDialog")
 
 [node name="TableSurface" type="MeshInstance3D" parent="Table"]
 transform = Transform3D(1, 0, 0, 0, -4.37114e-08, -1, 0, 1, -4.37114e-08, 0, 0, -1)
@@ -45,11 +47,11 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.0384331, 14.4276, 0)
 card_layout_strategy = SubResource("Resource_w7312")
 
 [node name="Player_Hand" parent="Table" instance=ExtResource("4_kqfgc")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -8.73189, -4.64072, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0116749, -5.34693, 0)
 card_layout_strategy = SubResource("Resource_w7312")
 
 [node name="Dealer_Hand" parent="Table" instance=ExtResource("4_kqfgc")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 8.6708, -4.57966, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.0494184, 2.5746, 0)
 card_layout_strategy = SubResource("Resource_vepqr")
 
 [node name="Player_Score" type="Label" parent="Table"]
@@ -71,6 +73,19 @@ offset_left = 143.0
 offset_top = 62.0
 offset_right = 336.0
 offset_bottom = 157.0
+
+[node name="Info_label" type="Label" parent="Table"]
+offset_left = 44.0
+offset_top = 213.0
+offset_right = 296.0
+offset_bottom = 324.0
+
+[node name="CardDialog" type="ConfirmationDialog" parent="Table"]
+title = "Take 3. Card"
+position = Vector2i(900, 500)
+ok_button_text = "Yes"
+cancel_button_text = "No"
+script = ExtResource("6_p3mqo")
 
 [node name="Deck" parent="." instance=ExtResource("4_rcrqi")]
 transform = Transform3D(-1, 0, 8.74228e-08, 0, 1, 0, -8.74228e-08, 0, -1, 11.086, 4.885, -0.687)
