@@ -69,6 +69,13 @@ func get_card(hand):
 	
 	return card.rank
 	
+func get_second_dealer_card():
+	var card: Card3D = deck.pop_card()
+	print("[get_second_dealer_card] TEST: ", card)
+	#card.global_position = $"../Deck".global_position
+	#hand.append_card(card)
+	return card
+	
 func stop_index_reached() -> bool:
 	print("Stop Index At: ", DECK_SIZE / 2)
 	print("Remaining Cards: ",deck.cards.size())
@@ -110,6 +117,8 @@ func dealer_3card(hand, score):
 	if score <= 16:
 		get_card(hand)
 		info_label.text += "Dealer takes 3. card\n"
+		info_label.text += "Dealer cards: " + str(dealer_hand.cards) + "\n"
+
 	
 
 func display_score(player_score, dealer_score):
@@ -162,9 +171,14 @@ func _on_button_play_pressed():
 	# [2] Give Player and Dealer two cards
 	# TODO: Dont show the first card of the dealer
 	get_2_card(player_hand)
-	get_2_card(dealer_hand)
+	# Dealer gets two cards but only one is shown until the player decides if he
+	# takes a third card or not
+	get_card(dealer_hand)
+	var dealer_second_card: Card3D = get_second_dealer_card()
+
 	print("Player has: ", player_hand.cards)
 	print("Dealer has: ", dealer_hand.cards)
+
 	# Calculate current score
 	player_score = calc_score(player_hand)
 	dealer_score = calc_score(dealer_hand)
@@ -183,6 +197,10 @@ func _on_button_play_pressed():
 		var take_3_card = await cardDialog.wait_for_user_decision()
 		if take_3_card:
 			get_card(player_hand)
+			
+		# Reveil dealers second card
+		dealer_hand.append_card(dealer_second_card)
+		dealer_score = calc_score(dealer_hand)
 
 		# Recalculate the score
 		player_score = calc_score(player_hand)
@@ -190,6 +208,8 @@ func _on_button_play_pressed():
 		print("Player has: ", player_hand.cards)
 		info_label.text += "Player cards: " + str(player_hand.cards) + "\n"
 		info_label.text += "Dealer cards: " + str(dealer_hand.cards) + "\n"
+		# wait 2 seconds
+		await get_tree().create_timer(2).timeout
 		
 		# [3.5] Check if player lost 
 		if check_lost(player_score):
