@@ -1,4 +1,4 @@
-#class_name FaceCard3D
+class_name FaceCard3D
 extends Card3D
 
 @export var data: Dictionary:
