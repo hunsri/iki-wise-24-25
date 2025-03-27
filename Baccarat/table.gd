@@ -107,7 +107,7 @@ func calc_score(hand):
 	
 	# calculating score through states of possible ace counts
 	if ace_count == 1:
-		if score < 12:
+		if score < 11:
 			score += 11
 		elif score >= 12:
 			score += 1
@@ -118,7 +118,7 @@ func calc_score(hand):
 			score += 12
 	elif ace_count == 3:
 		score = 13
-		
+	
 	return score
 
 # Check if dealer gets a 3. card	
