@@ -61,20 +61,14 @@ func get_2_card(hand):
 	get_card(hand)
 	get_card(hand)
 
-func get_card(hand):
+func get_card(hand, face_down:bool = false):
 	
 	var card: Card3D = deck.pop_card()
+	card.face_down = face_down
 	hand.append_card(card)
 	card.global_position = $"../Deck".global_position
 	
 	return card.rank
-	
-func get_second_dealer_card():
-	var card: Card3D = deck.pop_card()
-	print("[get_second_dealer_card] TEST: ", card)
-	#card.global_position = $"../Deck".global_position
-	#hand.append_card(card)
-	return card
 	
 func stop_index_reached() -> bool:
 	print("Stop Index At: ", DECK_SIZE / 2)
@@ -107,7 +101,7 @@ func calc_score(hand):
 		elif card.rank == 14:
 			ace_found = true
 	if score < 12 && ace_found:
-		score += 10
+		score += 11
 	elif score >= 12 && ace_found:
 		score += 1
 	return score
@@ -139,6 +133,11 @@ func check_lost(score):
 
 func _on_button_play_pressed():
 	
+	if round_ongoing:
+		return
+	else:
+		round_ongoing = true
+	
 	# [0] Set up labels, scores, hands and deck
 	var player_score = 0
 	var dealer_score = 0
@@ -159,22 +158,17 @@ func _on_button_play_pressed():
 		fill_deck()
 		print("Deck has been refilled and shuffled!")
 	
-	if round_ongoing:
-		return
-	else:
-		round_ongoing = true
-	
 	# [1] START OF ROUND
 	print("Play one Round of Blackjack")
 	info_label.text += "Play one round of Blackjack\n"
 	
 	# [2] Give Player and Dealer two cards
-	# TODO: Dont show the first card of the dealer
 	get_2_card(player_hand)
-	# Dealer gets two cards but only one is shown until the player decides if he
+	# Dealer gets two cards but only second one is shown until the player decides if he
 	# takes a third card or not
+	get_card(dealer_hand, true)
 	get_card(dealer_hand)
-	var dealer_second_card: Card3D = get_second_dealer_card()
+	
 
 	print("Player has: ", player_hand.cards)
 	print("Dealer has: ", dealer_hand.cards)
@@ -198,8 +192,9 @@ func _on_button_play_pressed():
 		if take_3_card:
 			get_card(player_hand)
 			
-		# Reveil dealers second card
-		dealer_hand.append_card(dealer_second_card)
+		# Reveil dealers first card
+		dealer_hand.cards[0].face_down = false
+		#dealer_hand.append_card(dealer_second_card)
 		dealer_score = calc_score(dealer_hand)
 
 		# Recalculate the score
