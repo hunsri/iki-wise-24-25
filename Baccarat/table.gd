@@ -16,6 +16,7 @@ var suit_index = 0
 var rank_index = 0
 
 var round_ongoing:bool = false
+var hide_dealer_score = true
 
 @onready var deck: CardCollection3D = $Deck_Cards
 
@@ -91,6 +92,9 @@ func fill_deck():
 func calc_score(hand):
 	var score = 0
 	var ace_found = false
+	var more_ace_found = false
+	
+	var ace_count = 0
 	
 	for card in hand.cards:
 		if card.rank <= 10:
@@ -99,11 +103,22 @@ func calc_score(hand):
 			score += 10
 		# NOT FINISHED YET
 		elif card.rank == 14:
-			ace_found = true
-	if score < 12 && ace_found:
-		score += 11
-	elif score >= 12 && ace_found:
-		score += 1
+			ace_count += 1
+	
+	# calculating score through states of possible ace counts
+	if ace_count == 1:
+		if score < 12:
+			score += 11
+		elif score >= 12:
+			score += 1
+	elif ace_count == 2:
+		if score + 12 > 21:
+			score += 2
+		else:
+			score += 12
+	elif ace_count == 3:
+		score = 13
+		
 	return score
 
 # Check if dealer gets a 3. card	
@@ -117,7 +132,8 @@ func dealer_3card(hand, score):
 
 func display_score(player_score, dealer_score):
 	player_score_label.text = "Player Score: " + str(player_score)
-	dealer_score_label.text = "Dealer Score: " + str(dealer_score)
+	var d_score: String = "hidden" if hide_dealer_score else str(dealer_score)
+	dealer_score_label.text = "Dealer Score: " + d_score
 	
 
 func check_blackjack(score):
@@ -135,8 +151,9 @@ func _on_button_play_pressed():
 	
 	if round_ongoing:
 		return
-	else:
-		round_ongoing = true
+
+	round_ongoing = true
+	hide_dealer_score = true
 	
 	# [0] Set up labels, scores, hands and deck
 	var player_score = 0
@@ -167,6 +184,7 @@ func _on_button_play_pressed():
 	# Dealer gets two cards but only second one is shown until the player decides if he
 	# takes a third card or not
 	get_card(dealer_hand, true)
+	
 	get_card(dealer_hand)
 	
 
@@ -191,8 +209,9 @@ func _on_button_play_pressed():
 		var take_3_card = await cardDialog.wait_for_user_decision()
 		if take_3_card:
 			get_card(player_hand)
-			
+		
 		# Reveil dealers first card
+		hide_dealer_score = false
 		dealer_hand.cards[0].face_down = false
 		#dealer_hand.append_card(dealer_second_card)
 		dealer_score = calc_score(dealer_hand)
