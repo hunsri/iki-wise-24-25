@@ -32,7 +32,8 @@ var hide_dealer_score = true
 # Asks the player if he wants to take a 3. card
 @export var cardDialog : CardDialog
 
-var stateObserver: StateObserver = StateObserver.new()
+var state_observer: StateObserver = StateObserver.new()
+var markov_chain: MarkovChain = MarkovChain.new()
 
 func _ready() -> void:
 	fill_deck()
@@ -72,7 +73,7 @@ func get_card(hand, face_down:bool = false):
 	card.global_position = $"../Deck".global_position
 	
 	if !face_down:
-		stateObserver.add_card(card.rank)
+		state_observer.add_card(card.rank)
 	
 	return card.rank
 	
@@ -180,7 +181,7 @@ func _on_button_play_pressed():
 		fill_deck()
 		print("Deck has been refilled and shuffled!")
 		# resetting the state observer for a new deck
-		stateObserver = StateObserver.new()
+		state_observer = StateObserver.new()
 	
 	# [1] START OF ROUND
 	print("Play one Round of Blackjack")
@@ -211,7 +212,7 @@ func _on_button_play_pressed():
 		round_ongoing = false
 		info_label.text += "[Result] Player wins\n"
 	else:
-		print(StateObserver.WinProbs.keys()[stateObserver.advice()])
+		print(StateObserver.WinProbs.keys()[state_observer.advice()])
 		
 		# [3] Ask player for 3. card and wait for button pressed
 		cardDialog.popup()
@@ -223,7 +224,7 @@ func _on_button_play_pressed():
 		hide_dealer_score = false
 		dealer_hand.cards[0].face_down = false
 		# add the now identified card to the state to track it
-		stateObserver.add_card(dealer_hand.cards[0].rank)
+		state_observer.add_card(dealer_hand.cards[0].rank)
 		
 		dealer_score = calc_score(dealer_hand)
 
