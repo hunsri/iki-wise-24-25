@@ -32,6 +32,8 @@ var hide_dealer_score = true
 # Asks the player if he wants to take a 3. card
 @export var cardDialog : CardDialog
 
+var stateObserver: StateObserver = StateObserver.new()
+
 func _ready() -> void:
 	fill_deck()
 
@@ -69,12 +71,15 @@ func get_card(hand, face_down:bool = false):
 	hand.append_card(card)
 	card.global_position = $"../Deck".global_position
 	
+	if !face_down:
+		stateObserver.add_card(card.rank)
+	
 	return card.rank
 	
 func stop_index_reached() -> bool:
-	print("Stop Index At: ", DECK_SIZE / 2)
+	print("Stop Index At: ", DECK_SIZE / 4, " cards left")
 	print("Remaining Cards: ",deck.cards.size())
-	return (DECK_SIZE / 2 > deck.cards.size())
+	return (DECK_SIZE / 4 > deck.cards.size())
 	
 func fill_deck():
 	
@@ -174,6 +179,8 @@ func _on_button_play_pressed():
 		print("Stop index has been reached!")
 		fill_deck()
 		print("Deck has been refilled and shuffled!")
+		# resetting the state observer for a new deck
+		stateObserver = StateObserver.new()
 	
 	# [1] START OF ROUND
 	print("Play one Round of Blackjack")
@@ -204,16 +211,20 @@ func _on_button_play_pressed():
 		round_ongoing = false
 		info_label.text += "[Result] Player wins\n"
 	else:
+		print(StateObserver.WinProbs.keys()[stateObserver.advice()])
+		
 		# [3] Ask player for 3. card and wait for button pressed
 		cardDialog.popup()
 		var take_3_card = await cardDialog.wait_for_user_decision()
 		if take_3_card:
 			get_card(player_hand)
 		
-		# Reveil dealers first card
+		# Reveal dealers first card
 		hide_dealer_score = false
 		dealer_hand.cards[0].face_down = false
-		#dealer_hand.append_card(dealer_second_card)
+		# add the now identified card to the state to track it
+		stateObserver.add_card(dealer_hand.cards[0].rank)
+		
 		dealer_score = calc_score(dealer_hand)
 
 		# Recalculate the score
