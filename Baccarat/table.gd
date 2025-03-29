@@ -74,6 +74,7 @@ func get_card(hand, face_down:bool = false):
 	
 	if !face_down:
 		state_observer.add_card(card.rank)
+		markov_chain.do_transit(convert_to_hard_value(card.rank))
 	
 	return card.rank
 	
@@ -93,8 +94,19 @@ func fill_deck():
 	
 	deck.cards.shuffle()
 	
+
+func calc_hard_score(hand):
+	var score = 0
 	
-# NOT FINISHED YET
+	for card in hand.cards:
+		if card.rank <= 10:
+			score += card.rank
+		elif (card.rank >= 10 && card.rank <= 13):
+			score += 10
+		elif card.rank == 14:
+			score += 1
+	return score
+	
 func calc_score(hand):
 	var score = 0
 	var ace_found = false
@@ -107,7 +119,6 @@ func calc_score(hand):
 			score += card.rank
 		elif (card.rank >= 10 && card.rank <= 13):
 			score += 10
-		# NOT FINISHED YET
 		elif card.rank == 14:
 			ace_count += 1
 	
@@ -153,6 +164,14 @@ func check_lost(score):
 		return true
 	return false
 
+func convert_to_hard_value(rank:int) -> int:
+	if rank < 10:
+		return rank
+	elif rank < 14:
+		return 10
+	else:
+		return 1
+
 func _on_button_play_pressed():
 	
 	if round_ongoing:
@@ -182,6 +201,7 @@ func _on_button_play_pressed():
 		print("Deck has been refilled and shuffled!")
 		# resetting the state observer for a new deck
 		state_observer = StateObserver.new()
+		markov_chain = MarkovChain.new()
 	
 	# [1] START OF ROUND
 	print("Play one Round of Blackjack")
@@ -214,6 +234,9 @@ func _on_button_play_pressed():
 	else:
 		print(StateObserver.WinProbs.keys()[state_observer.advice()])
 		
+		var p_to_stay_under_21:float = markov_chain.possibility_of_not_exceeding(21 - calc_hard_score(player_hand))
+		print("P(unter 21): ", p_to_stay_under_21)
+		
 		# [3] Ask player for 3. card and wait for button pressed
 		cardDialog.popup()
 		var take_3_card = await cardDialog.wait_for_user_decision()
@@ -223,6 +246,8 @@ func _on_button_play_pressed():
 		# Reveal dealers first card
 		hide_dealer_score = false
 		dealer_hand.cards[0].face_down = false
+		
+		markov_chain.do_transit(convert_to_hard_value(dealer_hand.cards[0].rank))
 		# add the now identified card to the state to track it
 		state_observer.add_card(dealer_hand.cards[0].rank)
 		
